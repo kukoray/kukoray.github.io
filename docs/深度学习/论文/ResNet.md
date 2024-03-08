@@ -113,6 +113,115 @@ ResNet ：Deep Residual Learning Framework；（residual剩余）
 
 ![image-20220520104638122](https://s2.loli.net/2022/05/20/U5z8VJE2HNy7vLW.png)
 
+
+
+## 代码解读
+
+现有H(x) = F(x)+x, 只要F(x)=0,那么H(x)=x,H(x)就是恒等映射，也就是有了“什么都不做”的能力。ResNet基于这一思想提出了一种残差网络的结构，其中输入x可以传递到输出，传递的过程被称为ShortCut。
+同时，下图里有两个权重层，即F(x)部分。假如“什么都不学习”是最优的，或者说H(x)=x是最优的，那么理论上来说，F(x)学习到的目标值为0即可；如果H(x)=x不是最优，那么基于神经网络强大的学习能力，F(x)可以尽可能去拟合我们期望的值。
+
+
+BasicBlock
+ResNet中使用的一种网络结构，在resnet18和resnet34中使用了BasicBlock：
+输入输出通道数均为64，残差基础块中两个3×3卷积层参数量是：
+
+
+
+
+BasicBlock类中计算了残差，该类继承了nn.Module。
+
+
+
+
+```python
+class BasicBlock(nn.Module):
+    expansion = 1
+    
+def __init__(self, inplanes, planes, stride=1, downsample=None):
+    super(BasicBlock, self).__init__()
+    self.conv1 = conv3x3(inplanes, planes, stride)
+    self.bn1 = nn.BatchNorm2d(planes)
+    self.relu = nn.ReLU(inplace=True)
+    self.conv2 = conv3x3(planes, planes)
+    self.bn2 = nn.BatchNorm2d(planes)
+    self.downsample = downsample
+    self.stride = stride
+
+def forward(self, x):
+    identity = x
+
+    out = self.conv1(x)
+    out = self.bn1(out)
+    out = self.relu(out)
+
+    out = self.conv2(out)
+    out = self.bn2(out)
+
+    if self.downsample is not None:
+        identity = self.downsample(x)
+
+    out += identity
+    out = self.relu(out)
+
+    return out
+```
+
+
+bottleNeck
+ResNet-34核心部分均使用3×3卷积层，总层数相对没那么多，对于更深的网络，作者们提出了另一种残差基础块。(在resnet50、resnet101、resnet152使用了Bottlenect构造网络.)
+
+Bottleneck Block中使用了1×1卷积层。如输入通道数为256，1×1卷积层会将通道数先降为64，经过3×3卷积层后，再将通道数升为256。1×1卷积层的优势是在更深的网络中，用较小的参数量处理通道数很大的输入。
+
+在Bottleneck Block中，输入输出通道数均为256，残差基础块中的参数量是：
+
+与BasicBlock比较，使用1×1卷积层，参数量减少了。当然，使用这样的设计，也是因为更深的网络对显存和算力都有更高的要求，在算力有限的情况下，深层网络中的残差基础块应该减少算力消耗。
+
+
+代码：
+
+class Bottleneck(nn.Module):
+    expansion = 4
+
+```python
+def __init__(self, inplanes, planes, stride=1, downsample=None):
+    super(Bottleneck, self).__init__()
+    self.conv1 = conv1x1(inplanes, planes)
+    self.bn1 = nn.BatchNorm2d(planes)
+    self.conv2 = conv3x3(planes, planes, stride)
+    self.bn2 = nn.BatchNorm2d(planes)
+    self.conv3 = conv1x1(planes, planes * self.expansion)
+    self.bn3 = nn.BatchNorm2d(planes * self.expansion)
+    self.relu = nn.ReLU(inplace=True)
+    self.downsample = downsample
+    self.stride = stride
+
+def forward(self, x):
+    identity = x
+
+    out = self.conv1(x)
+    out = self.bn1(out)
+    out = self.relu(out)
+
+    out = self.conv2(out)
+    out = self.bn2(out)
+    out = self.relu(out)
+
+    out = self.conv3(out)
+    out = self.bn3(out)
+
+    if self.downsample is not None:
+        identity = self.downsample(x)
+
+    out += identity
+    out = self.relu(out)
+
+    return out
+```
+
+
+
+
+
 ## 文章经典句子
 
 一篇文章要成为经典，不见得一定要提出原创性的东西，很可能就是把之前的一些东西很巧妙的放在一起，能解决一个现在大家比较关心难的问题

@@ -105,7 +105,7 @@ const int  & 和 int &是两种不同的数据类型
 
 
 
-```c++
+```cpp
 #include <iostream>
  
 using namespace std;
@@ -187,7 +187,7 @@ int main( )
 
 我们不提供时，编译器会提供空的实现
 
-```c++
+```cpp
 //
 // Created by Jacky on 2022-09-23.
 //
@@ -256,7 +256,7 @@ int main() {
 
 拷贝构造函数
 
-```c++
+```cpp
 Line::Line(const Line &obj)
 {
     cout << "调用拷贝构造函数并为指针 ptr 分配内存" << endl;
@@ -291,7 +291,7 @@ C++ 接口是使用**抽象类**来实现的，抽象类与数据抽象互不混
 
 <u>如果类中至少有一个函数被声明为纯虚函数，则这个类就是抽象类</u>。纯虚函数是通过在声明中使用 "= 0" 来指定的，如下所示：
 
-```c++
+```cpp
 class Box
 {
    public:

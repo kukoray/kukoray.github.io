@@ -39,7 +39,7 @@ print(car._Car__privateFunc())  # 是一种访问私有方法的方式，但是�
 
 ## tensorflow
 
-```
+```python
 tf.reset_default_graph()
 ```
 
@@ -79,4 +79,19 @@ print(add_100(1, 2, 3))  # 106
 add_101 = partial(add, 101)
 print(add_101(1, 2, 3))  # 107
 ```
+
+
+
+总结一些日常使用中，python语言特有的一些语法技巧和trick
+
+
+
+```python
+[OrderedDict() for _ in range(len(user_idx))]
+output_weight_name = [k for k in self.global_parameters.keys() if 'weight' in k][-1]
+output_bias_name = [k for k in self.global_parameters.keys() if 'bias' in k][-1]
+```
+
+
+
 
